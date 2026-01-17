@@ -13,9 +13,8 @@
 
 TemporalDB is a complete temporal database system demonstrating **time-travel queries**, **automatic change tracking**, and **complete audit trails**. It includes:
 
-- **Core Module** - 53+ classes implementing the temporal database engine (7,000+ LOC)
-- **CLI Module** - Command-line interface with 40+ commands (3,500+ LOC)
-- **Web Module** - Spring Boot web application with real-world demo (600+ LOC)
+- **Core Module** - classes implementing the temporal database engine
+- **Web Module** - Spring Boot web application demo
 
 ### What Makes TemporalDB Special
 
