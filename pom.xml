@@ -15,8 +15,7 @@
 
     <modules>
         <module>temporaldb-core</module>
-        <module>temporaldb-cli</module>
-        <module>transaction-service</module>
+        <module>temporaldb-web</module>
     </modules>
 
     <properties>

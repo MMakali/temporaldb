@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${id != null} ? 'Edit Product' : 'New Product'">Product Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #64748b;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #3b82f6;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .required::after {
+            content: '*';
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #f8fafc;
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box-text {
+            color: #334155;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .form-divider {
+            border-top: 2px solid #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+        }
+
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .help-text {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-base {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <i class="fas fa-clock text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TemporalDB</span>
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+                    <a href="/products" class="nav-link active"><i class="fas fa-box mr-2"></i>Products</a>
+                    <a href="/audit" class="nav-link"><i class="fas fa-history mr-2"></i>Audit Trail</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="form-header">
+        <h1 class="form-title" th:text="${id != null} ? 'Edit Product' : 'New Product'">New Product</h1>
+        <p class="form-subtitle">
+            <i class="fas fa-info-circle mr-2"></i>
+            All changes are automatically tracked and timestamped
+        </p>
+    </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:action="${id != null} ? '/products/' + ${id} : '/products'"
+              method="post"
+              th:object="${form}"
+              novalidate>
+
+            <!-- Product Name -->
+            <div class="form-group">
+                <label for="name" class="form-label required">Product Name</label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       th:value="${form.name}"
+                       required
+                       class="form-input"
+                       placeholder="Enter product name"
+                       autocomplete="off">
+                <div class="help-text"><i class="fas fa-lightbulb mr-1"></i>Use a clear, descriptive name</div>
+            </div>
+
+            <!-- Category and Price Row -->
+            <div class="form-row">
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="category" class="form-label required">Category</label>
+                    <select id="category"
+                            name="category"
+                            required
+                            class="form-select">
+                        <option value="">Select a category</option>
+                        <option value="Electronics" th:selected="${form.category == 'Electronics'}">
+                            <i class="fas fa-microchip mr-2"></i>Electronics
+                        </option>
+                        <option value="Furniture" th:selected="${form.category == 'Furniture'}">
+                            <i class="fas fa-chair mr-2"></i>Furniture
+                        </option>
+                        <option value="Clothing" th:selected="${form.category == 'Clothing'}">
+                            <i class="fas fa-shirt mr-2"></i>Clothing
+                        </option>
+                        <option value="Books" th:selected="${form.category == 'Books'}">
+                            <i class="fas fa-book mr-2"></i>Books
+                        </option>
+                        <option value="Other" th:selected="${form.category == 'Other'}">
+                            <i class="fas fa-box mr-2"></i>Other
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Price -->
+                <div class="form-group">
+                    <label for="price" class="form-label required">Price ($)</label>
+                    <input type="number"
+                           id="price"
+                           name="price"
+                           th:value="${form.price}"
+                           step="0.01"
+                           min="0"
+                           required
+                           class="form-input"
+                           placeholder="0.00"
+                           autocomplete="off">
+                    <div class="help-text"><i class="fas fa-dollar-sign mr-1"></i>Enter the product price</div>
+                </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="form-group">
+                <label for="quantity" class="form-label required">Initial Quantity</label>
+                <input type="number"
+                       id="quantity"
+                       name="quantity"
+                       th:value="${form.quantity}"
+                       min="0"
+                       required
+                       class="form-input"
+                       placeholder="0"
+                       autocomplete="off">
+                <div class="help-text"><i class="fas fa-warehouse mr-1"></i>Number of units in stock</div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description"
+                          name="description"
+                          class="form-textarea"
+                          placeholder="Enter a detailed description of the product..."
+                          th:text="${form.description}"></textarea>
+                <div class="help-text"><i class="fas fa-pen-to-square mr-1"></i>Optional: Add more details about the product</div>
+            </div>
+
+            <!-- Divider -->
+            <div class="form-divider"></div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <div class="info-box-text">
+                    <i class="fas fa-clock mr-2 text-blue-600"></i>
+                    <strong>Temporal Tracking:</strong> All changes will be tracked in the audit trail with precise timestamps. You can view the complete history of any product at any time.
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-base btn-submit">
+                    <i th:if="${id == null}" class="fas fa-plus"></i>
+                    <i th:unless="${id == null}" class="fas fa-save"></i>
+                    <span th:if="${id != null}">Update Product</span>
+                    <span th:unless="${id != null}">Create Product</span>
+                </button>
+                <a href="/products" class="btn-base btn-cancel">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <p class="text-slate-600 text-sm">© 2025 TemporalDB. Demonstrating temporal queries and time-travel capability.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.name} + ' - TemporalDB'">Product Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #64748b;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #3b82f6;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: #1e40af;
+        }
+
+        .breadcrumb-separator {
+            color: #cbd5e1;
+        }
+
+        .product-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .product-image-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 5rem;
+            border-radius: 8px;
+            opacity: 0.8;
+        }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .product-category {
+            display: inline-block;
+            width: fit-content;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .product-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .product-description {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stock-status {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .stock-status.good {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #059669;
+        }
+
+        .stock-status.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #92400e;
+        }
+
+        .stock-status.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #991b1b;
+        }
+
+        .stock-status-text {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stock-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-back {
+            background: white;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-back:hover {
+            background: #f1f5f9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table thead {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .history-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+
+        .history-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .history-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .timestamp {
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #64748b;
+            font-size: 0.8125rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-created {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-updated {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .temporal-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .temporal-info-text {
+            color: #334155;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 32px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 2rem;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .product-header {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .product-title {
+                font-size: 1.75rem;
+            }
+
+            .product-price {
+                font-size: 2rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-base {
+                width: 100%;
+            }
+
+            .history-table {
+                font-size: 0.75rem;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <i class="fas fa-clock text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TemporalDB</span>
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+                    <a href="/products" class="nav-link active"><i class="fas fa-box mr-2"></i>Products</a>
+                    <a href="/audit" class="nav-link"><i class="fas fa-history mr-2"></i>Audit Trail</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/products"><i class="fas fa-box"></i>Products</a>
+        <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+        <span th:text="${product.name}">Product Name</span>
+    </div>
+
+    <!-- Product Header -->
+    <div class="product-header">
+        <!-- Product Image -->
+        <div class="product-image-container">
+            <div class="product-image">
+                <i class="fas fa-cube"></i>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info">
+            <span class="product-category" th:text="${product.category}">Category</span>
+            <h1 class="product-title" th:text="${product.name}">Product Name</h1>
+            <div class="product-price">KSH<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span></div>
+
+            <p class="product-description" th:text="${product.description}">Product description goes here. This would be a detailed description of the product including its features, benefits, and other relevant information.</p>
+
+            <!-- Stock Status -->
+            <div th:if="${product.quantity > 20}" class="stock-status good">
+                <div class="stock-status-text">
+                    <i class="fas fa-check-circle mr-2"></i>In Stock
+                </div>
+                <div class="stock-bar">
+                    <div class="stock-fill" th:style="'width: ' + ${T(java.lang.Math).min(product.quantity * 10, 100)} + '%'"></div>
+                </div>
+            </div>
+            <div th:if="${product.quantity > 5 && product.quantity <= 20}" class="stock-status warning">
+                <div class="stock-status-text">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Low Stock
+                </div>
+                <div class="stock-bar">
+                    <div class="stock-fill" th:style="'width: ' + ${T(java.lang.Math).min(product.quantity * 10, 100)} + '%'"></div>
+                </div>
+            </div>
+            <div th:if="${product.quantity <= 5}" class="stock-status danger">
+                <div class="stock-status-text">
+                    <i class="fas fa-times-circle mr-2"></i>Critical Stock
+                </div>
+                <div class="stock-bar">
+                    <div class="stock-fill" th:style="'width: ' + ${T(java.lang.Math).min(product.quantity * 10, 100)} + '%'"></div>
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label"><i class="fas fa-box mr-2"></i>Quantity</div>
+                    <div class="info-value" th:text="${product.quantity}">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label"><i class="fas fa-dollar-sign mr-2"></i>Total Value</div>
+                    <div class="info-value">KSH<span th:text="${#numbers.formatDecimal(product.price * product.quantity, 1, 2)}">0.00</span></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a th:href="'/products/' + ${product.id} + '/edit'" class="btn-base btn-edit">
+                    <i class="fas fa-edit"></i>Edit Product
+                </a>
+                <a href="/products" class="btn-base btn-back">
+                    <i class="fas fa-arrow-left"></i>Back to Products
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change History Section -->
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i>Change History
+        </h2>
+
+        <div class="temporal-info">
+            <div class="temporal-info-text">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>Temporal Tracking:</strong> This product's complete change history is tracked and timestamped. You can view exactly when and how each modification was made.
+            </div>
+        </div>
+
+        <div th:if="${history.isEmpty()}" class="empty-history">
+            <div class="empty-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <p>No change history recorded yet</p>
+            <p class="text-sm text-slate-500 mt-2">This product was just created</p>
+        </div>
+
+        <div th:unless="${history.isEmpty()}" class="overflow-x-auto">
+            <table class="history-table">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-clock mr-2"></i>Timestamp</th>
+                    <th><i class="fas fa-dollar-sign mr-2"></i>Price</th>
+                    <th><i class="fas fa-warehouse mr-2"></i>Quantity</th>
+                    <th><i class="fas fa-info-circle mr-2"></i>Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${history}">
+                    <td>
+                        <span class="timestamp" th:text="${#temporals.format(entry.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2024-01-15 14:30:45</span>
+                    </td>
+                    <td>
+                        <strong>KSH<span th:text="${#numbers.formatDecimal(entry.price, 1, 2)}">0.00</span></strong>
+                    </td>
+                    <td>
+                        <strong th:text="${entry.quantity}">0</strong>
+                    </td>
+                    <td>
+                        <span th:text="${entry.change}" class="text-xs">No additional details</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Related Information Section -->
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fas fa-info-circle"></i>Product Information
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-24">
+            <!-- Left Column -->
+            <div>
+                <div class="mb-24">
+                    <h3 class="font-semibold text-slate-900 mb-3">Specifications</h3>
+                    <dl class="space-y-3">
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Category:</dt>
+                            <dd class="font-semibold text-slate-900" th:text="${product.category}">Category</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Unit Price:</dt>
+                            <dd class="font-semibold text-slate-900">KSH<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span></dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Current Stock:</dt>
+                            <dd class="font-semibold text-slate-900" th:text="${product.quantity}">0</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Total Value:</dt>
+                            <dd class="font-semibold text-slate-900">KSH<span th:text="${#numbers.formatDecimal(product.price * product.quantity, 1, 2)}">0.00</span></dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <div class="mb-24">
+                    <h3 class="font-semibold text-slate-900 mb-3">Status</h3>
+                    <dl class="space-y-3">
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Availability:</dt>
+                            <dd>
+                                    <span th:if="${product.quantity > 0}" class="badge badge-created">
+                                        <i class="fas fa-check-circle mr-1"></i>Available
+                                    </span>
+                                <span th:unless="${product.quantity > 0}" class="badge badge-deleted">
+                                        <i class="fas fa-times-circle mr-1"></i>Out of Stock
+                                    </span>
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-slate-600">Stock Level:</dt>
+                            <dd>
+                                <span th:if="${product.quantity > 20}" class="text-green-600 font-semibold">Good</span>
+                                <span th:if="${product.quantity > 5 && product.quantity <= 20}" class="text-amber-600 font-semibold">Low</span>
+                                <span th:if="${product.quantity <= 5}" class="text-red-600 font-semibold">Critical</span>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <p class="text-slate-600 text-sm">© 2025 TemporalDB. Demonstrating temporal queries and time-travel capability.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

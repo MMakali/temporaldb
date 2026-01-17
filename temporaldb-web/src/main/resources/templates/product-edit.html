@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Edit ' + ${product.name}">Edit Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #64748b;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #3b82f6;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: #1e40af;
+        }
+
+        .breadcrumb-separator {
+            color: #cbd5e1;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .required::after {
+            content: '*';
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #f8fafc;
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .help-text {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box-text {
+            color: #334155;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .side-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .side-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.125rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-good {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+        }
+
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-text {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        .form-divider {
+            border-top: 2px solid #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+        }
+
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-delete {
+            background: white;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .danger-zone {
+            border: 2px solid #fed7d7;
+            background: rgba(254, 215, 215, 0.05);
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .danger-zone-title {
+            font-weight: 700;
+            color: #991b1b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .danger-zone-text {
+            color: #7c2d12;
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .change-indicator {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-base {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <i class="fas fa-clock text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TemporalDB</span>
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+                    <a href="/products" class="nav-link active"><i class="fas fa-box mr-2"></i>Products</a>
+                    <a href="/audit" class="nav-link"><i class="fas fa-history mr-2"></i>Audit Trail</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/products"><i class="fas fa-box"></i>Products</a>
+        <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+        <a th:href="'/products/' + ${product.id}" th:text="${product.name}">Product Name</a>
+        <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+        <span>Edit</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-edit mr-2 text-blue-600"></i>
+            <span th:text="'Edit ' + ${product.name}">Edit Product</span>
+        </h1>
+        <p class="page-subtitle">
+            <i class="fas fa-info-circle mr-2"></i>
+            All changes will be tracked in the audit trail with timestamps
+        </p>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- Form Column -->
+        <div>
+            <!-- Edit Form -->
+            <div class="form-card">
+                <form th:action="'/products/' + ${product.id}"
+                      method="post"
+                      th:object="${form}"
+                      novalidate>
+
+                    <!-- Product Information Section -->
+                    <h2 class="form-section-title">
+                        <i class="fas fa-box-open text-blue-500"></i>Product Information
+                    </h2>
+
+                    <!-- Product Name -->
+                    <div class="form-group">
+                        <label for="name" class="form-label required">Product Name</label>
+                        <input type="text"
+                               id="name"
+                               name="name"
+                               th:value="${form.name}"
+                               required
+                               class="form-input"
+                               placeholder="Enter product name"
+                               autocomplete="off">
+                        <div class="help-text"><i class="fas fa-lightbulb mr-1"></i>Use a clear, descriptive name</div>
+                    </div>
+
+                    <!-- Category and Price Row -->
+                    <div class="form-row">
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label for="category" class="form-label required">Category</label>
+                            <select id="category"
+                                    name="category"
+                                    required
+                                    class="form-select">
+                                <option value="">Select a category</option>
+                                <option value="Electronics" th:selected="${form.category == 'Electronics'}">Electronics</option>
+                                <option value="Furniture" th:selected="${form.category == 'Furniture'}">Furniture</option>
+                                <option value="Clothing" th:selected="${form.category == 'Clothing'}">Clothing</option>
+                                <option value="Books" th:selected="${form.category == 'Books'}">Books</option>
+                                <option value="Other" th:selected="${form.category == 'Other'}">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="form-group">
+                            <label for="price" class="form-label required">Price (KSH)</label>
+                            <input type="number"
+                                   id="price"
+                                   name="price"
+                                   th:value="${form.price}"
+                                   step="0.01"
+                                   min="0"
+                                   required
+                                   class="form-input"
+                                   placeholder="0.00"
+                                   autocomplete="off">
+                            <div class="help-text"><i class="fas fa-dollar-sign mr-1"></i>Unit price of the product</div>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="form-group">
+                        <label for="quantity" class="form-label required">Quantity in Stock</label>
+                        <input type="number"
+                               id="quantity"
+                               name="quantity"
+                               th:value="${form.quantity}"
+                               min="0"
+                               required
+                               class="form-input"
+                               placeholder="0"
+                               autocomplete="off">
+                        <div class="help-text"><i class="fas fa-warehouse mr-1"></i>Current number of units available</div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description"
+                                  name="description"
+                                  class="form-textarea"
+                                  placeholder="Enter a detailed description of the product..."
+                                  th:text="${form.description}"></textarea>
+                        <div class="help-text"><i class="fas fa-pen-to-square mr-1"></i>Provide detailed information about the product</div>
+                    </div>
+
+                    <!-- Info Box -->
+                    <div class="info-box">
+                        <div class="info-box-text">
+                            <i class="fas fa-history mr-2 text-blue-600"></i>
+                            <strong>Temporal Tracking:</strong> All modifications to this product will be recorded with timestamps in the audit trail.
+                        </div>
+                    </div>
+
+                    <!-- Form Divider -->
+                    <div class="form-divider"></div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-base btn-save">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <a th:href="'/products/' + ${product.id}" class="btn-base btn-cancel">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="danger-zone">
+                        <div class="danger-zone-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Danger Zone
+                        </div>
+                        <div class="danger-zone-text">
+                            Deleting this product is permanent and cannot be undone. All associated data will be archived.
+                        </div>
+                        <button type="button" class="btn-base btn-delete w-full">
+                            <i class="fas fa-trash"></i>
+                            Delete Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar Column -->
+        <div class="sidebar">
+            <!-- Current Values Card -->
+            <div class="side-card" th:if="${product}">
+                <div class="side-card-title">
+                    <i class="fas fa-clipboard-check text-blue-500"></i>Current Values
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Name</span>
+                    <span class="stat-value text-sm font-semibold" th:text="${product.name}">Product</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Category</span>
+                    <span class="stat-value text-sm font-semibold" th:text="${product.category}">Category</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Price</span>
+                    <span class="stat-value">KSH<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span></span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Quantity</span>
+                    <span class="stat-value" th:text="${product.quantity}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Value</span>
+                    <span class="stat-value">KSH<span th:text="${#numbers.formatDecimal(product.price * product.quantity, 1, 2)}">0.00</span></span>
+                </div>
+            </div>
+
+            <!-- Stock Status Card -->
+            <div class="side-card" th:if="${product}">
+                <div class="side-card-title">
+                    <i class="fas fa-chart-bar text-green-500"></i>Stock Status
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Current Stock</span>
+                    <span th:if="${product.quantity > 20}" class="badge badge-good">
+                            <i class="fas fa-check-circle mr-1"></i>Good
+                        </span>
+                    <span th:if="${product.quantity > 5 && product.quantity <= 20}" class="badge badge-warning">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>Low
+                        </span>
+                    <span th:if="${product.quantity <= 5}" class="badge badge-danger">
+                            <i class="fas fa-times-circle mr-1"></i>Critical
+                        </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Units Available</span>
+                    <span class="stat-value" th:text="${product.quantity}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Inventory Value</span>
+                    <span class="stat-value">KSH<span th:text="${#numbers.formatDecimal(product.price * product.quantity, 1, 2)}">0.00</span></span>
+                </div>
+            </div>
+
+            <!-- Change History Card -->
+            <div class="side-card">
+                <div class="side-card-title">
+                    <i class="fas fa-history text-purple-500"></i>Recent Changes
+                </div>
+                <div th:if="${#lists.isEmpty(history)}" class="text-center py-8 text-slate-500">
+                    <i class="fas fa-clock text-2xl mb-2"></i>
+                    <p class="text-sm">No changes yet</p>
+                </div>
+                <div th:unless="${#lists.isEmpty(history)}" class="timeline">
+                    <div th:each="entry : ${#lists.size(history) > 3 ? #lists.subList(history, 0, 3) : history}" class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date" th:text="${#temporals.format(entry.timestamp, 'MMM dd, HH:mm')}">Jan 15, 14:30</div>
+                            <div class="timeline-text">
+                                <span th:if="${entry.change.contains('CREATED')}" class="text-green-600 font-semibold">Created</span>
+                                <span th:if="${entry.change.contains('UPDATED')}" class="text-blue-600 font-semibold">Updated</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a th:href="'/products/' + ${id}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold mt-4 inline-flex items-center gap-2">
+                    View Full History
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="side-card">
+                <div class="side-card-title">
+                    <i class="fas fa-lightbulb text-amber-500"></i>Tips
+                </div>
+                <ul class="space-y-3 text-sm text-slate-600">
+                    <li class="flex gap-2">
+                        <i class="fas fa-check-circle text-blue-500 flex-shrink-0 mt-0.5"></i>
+                        <span>Update prices in real-time across all channels</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <i class="fas fa-check-circle text-blue-500 flex-shrink-0 mt-0.5"></i>
+                        <span>Track quantity changes instantly</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <i class="fas fa-check-circle text-blue-500 flex-shrink-0 mt-0.5"></i>
+                        <span>All changes are timestamped for audit trail</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <i class="fas fa-check-circle text-blue-500 flex-shrink-0 mt-0.5"></i>
+                        <span>View historical data at any point in time</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <p class="text-slate-600 text-sm">© 2024 TemporalDB. Demonstrating temporal queries and time-travel capability.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

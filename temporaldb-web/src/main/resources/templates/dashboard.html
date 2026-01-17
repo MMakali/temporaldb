@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TemporalDB Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #64748b;
+            transition: color 0.3s ease;
+            padding-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #3b82f6;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+        .stat-card:hover::before {
+            top: -25%;
+            right: -25%;
+        }
+
+        .stat-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-value.green {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-value.cyan {
+            background: linear-gradient(135deg, #06b6d4, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Buttons */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+
+        .btn-outline:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .section-header::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        /* Feature List */
+        .feature-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-item:hover {
+            padding-left: 8px;
+        }
+
+        .feature-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .badge.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .badge.live {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                        <i class="fas fa-clock text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TemporalDB</span>
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link active"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+                    <a href="/products" class="nav-link"><i class="fas fa-box mr-2"></i>Products</a>
+                    <a href="/audit" class="nav-link"><i class="fas fa-history mr-2"></i>Audit Trail</a>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <button class="p-2 text-slate-500 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-bell text-lg"></i>
+                </button>
+                <button class="p-2 text-slate-500 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="mb-12 animate-in">
+        <h1 class="text-5xl font-bold text-slate-900 mb-2">Dashboard</h1>
+        <p class="text-slate-600 text-lg flex items-center gap-2">
+            <i class="fas fa-info-circle"></i>
+            Real-time product inventory with temporal tracking
+        </p>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <!-- Total Products -->
+        <div class="stat-card animate-in">
+            <div class="stat-content">
+                <div class="stat-icon text-blue-400"><i class="fas fa-cubes"></i></div>
+                <div class="text-slate-600 text-sm font-semibold uppercase tracking-wide mb-2">Total Products</div>
+                <div class="stat-value" th:text="${stats.totalProducts}">0</div>
+                <div class="text-slate-500 text-xs mt-2 flex items-center gap-1">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    Items in inventory
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Quantity -->
+        <div class="stat-card animate-in">
+            <div class="stat-content">
+                <div class="stat-icon text-purple-400"><i class="fas fa-box-open"></i></div>
+                <div class="text-slate-600 text-sm font-semibold uppercase tracking-wide mb-2">Total Quantity</div>
+                <div class="stat-value" th:text="${stats.totalQuantity}">0</div>
+                <div class="text-slate-500 text-xs mt-2 flex items-center gap-1">
+                    <i class="fas fa-warehouse text-purple-500"></i>
+                    Units in stock
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Value -->
+        <div class="stat-card animate-in">
+            <div class="stat-content">
+                <div class="stat-icon text-green-400"><i class="fas fa-dollar-sign"></i></div>
+                <div class="text-slate-600 text-sm font-semibold uppercase tracking-wide mb-2">Total Value</div>
+                <div class="stat-value green">KSH<span th:text="${#numbers.formatDecimal(stats.totalValue, 1, 2)}">0.00</span></div>
+                <div class="text-slate-500 text-xs mt-2 flex items-center gap-1">
+                    <i class="fas fa-chart-pie text-green-500"></i>
+                    Inventory worth
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Price -->
+        <div class="stat-card animate-in">
+            <div class="stat-content">
+                <div class="stat-icon text-cyan-400"><i class="fas fa-tag"></i></div>
+                <div class="text-slate-600 text-sm font-semibold uppercase tracking-wide mb-2">Average Price</div>
+                <div class="stat-value cyan">KSH<span th:text="${#numbers.formatDecimal(stats.averagePrice, 1, 2)}">0.00</span></div>
+                <div class="text-slate-500 text-xs mt-2 flex items-center gap-1">
+                    <i class="fas fa-trending-up text-cyan-500"></i>
+                    Per product
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-12 animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-lightning-bolt text-blue-500"></i>Quick Actions</h2>
+            <span class="badge">Get Started</span>
+        </div>
+        <div class="action-grid">
+            <a href="/products" class="btn-base btn-primary group">
+                <i class="fas fa-list group-hover:scale-110 transition-transform"></i>
+                View All Products
+            </a>
+            <a href="/products/new" class="btn-base btn-secondary group">
+                <i class="fas fa-plus group-hover:scale-110 transition-transform"></i>
+                New Product
+            </a>
+            <a href="/audit" class="btn-base btn-primary group">
+                <i class="fas fa-history group-hover:scale-110 transition-transform"></i>
+                Audit Trail
+            </a>
+            <a href="#" class="btn-base btn-outline group">
+                <i class="fas fa-download group-hover:scale-110 transition-transform"></i>
+                Export Data
+            </a>
+        </div>
+    </div>
+
+    <!-- Activity Metrics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12 animate-in">
+        <!-- Last Hour Changes -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-6">
+                <div class="section-header mb-0">
+                    <h3 class="!margin-0"><i class="fas fa-hourglass-end text-blue-500"></i>Last Hour</h3>
+                </div>
+                <span class="badge badge.live">Live</span>
+            </div>
+            <div class="stat-value text-3xl" th:text="${stats.lastHourChanges}">0</div>
+            <p class="text-slate-600 text-sm mt-3 flex items-center gap-2">
+                <i class="fas fa-sync-alt text-blue-500"></i>
+                Recent changes in the last hour
+            </p>
+        </div>
+
+        <!-- Today Changes -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-6">
+                <div class="section-header mb-0">
+                    <h3 class="!margin-0"><i class="fas fa-calendar-day text-green-500"></i>Today</h3>
+                </div>
+                <span class="badge badge.success">Updated</span>
+            </div>
+            <div class="stat-value green text-3xl" th:text="${stats.todayChanges}">0</div>
+            <p class="text-slate-600 text-sm mt-3 flex items-center gap-2">
+                <i class="fas fa-calendar-check text-green-500"></i>
+                All changes recorded today
+            </p>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="card border-blue-200 animate-in">
+        <div class="section-header">
+            <h2><i class="fas fa-star text-yellow-500"></i>Features</h2>
+            <span class="badge">Capabilities</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-900 mb-1">Temporal Tracking</p>
+                        <p class="text-xs text-slate-600">All product changes are tracked with precise timestamps for complete history</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-900 mb-1">Time-Travel Queries</p>
+                        <p class="text-xs text-slate-600">View products as they were at any point in time instantly</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-900 mb-1">Audit Trail</p>
+                        <p class="text-xs text-slate-600">Complete immutable history of all inventory changes</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-900 mb-1">Real-Time Stats</p>
+                        <p class="text-xs text-slate-600">Automatic calculation and updates of all inventory metrics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="mt-16 py-8 border-t border-slate-200 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+                <p class="font-semibold text-slate-900 mb-2">TemporalDB Demo</p>
+                <p class="text-slate-600 text-sm">Advanced temporal database capabilities for inventory management</p>
+            </div>
+            <div>
+                <p class="font-semibold text-slate-900 mb-3">Quick Links</p>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/" class="text-slate-600 hover:text-blue-600 transition-colors">Dashboard</a></li>
+                    <li><a href="/products" class="text-slate-600 hover:text-blue-600 transition-colors">Products</a></li>
+                    <li><a href="/audit" class="text-slate-600 hover:text-blue-600 transition-colors">Audit Trail</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="font-semibold text-slate-900 mb-3">Features</p>
+                <ul class="space-y-2 text-sm">
+                    <li><span class="text-slate-600">Time-Travel Queries</span></li>
+                    <li><span class="text-slate-600">Full Audit History</span></li>
+                    <li><span class="text-slate-600">Real-Time Analytics</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-slate-200 pt-8 text-center">
+            <p class="text-slate-600 text-sm">© 2025 TemporalDB. Demonstrating temporal queries and time-travel capability.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
