@@ -1,4 +1,4 @@
-# ⏰ TemporalDB - Temporal Database System
+# TemporalDB - Temporal Database System
 
 **A complete temporal database system with CLI and web interface demonstration**
 
@@ -63,9 +63,8 @@ You should see:
 ### Run the CLI
 
 ```bash
-cd cli
 java --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
-     -jar target/temporaldb-cli-2.0.0.jar
+     -jar target/temporaldb-core-2.0.0.jar
 ```
 
 Type `help` to see all 40+ commands.
@@ -106,7 +105,7 @@ Monitor:     metrics, health, stats
 Utility:     help, exit, clear, echo
 ```
 
-**Run it:** `java -jar cli/target/temporaldb-cli-2.0.0.jar`
+**Run it:** `java -jar target/temporaldb-core-2.0.0.jar`
 
 ### Web Module
 Spring Boot web application demonstrating TemporalDB:
@@ -277,7 +276,6 @@ mvn clean install
 ### Build Specific Module
 ```bash
 mvn -pl core clean install
-mvn -pl cli clean install
 mvn -pl web clean install
 ```
 
@@ -288,24 +286,6 @@ mvn spring-boot:run
 # Open: http://localhost:8080
 ```
 
-### Run CLI
-```bash
-cd cli
-java --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
-     -jar target/temporaldb-cli-2.0.0.jar
-```
-
-### Run Tests
-```bash
-# All tests
-mvn test
-
-# Specific module
-mvn -pl web test
-
-# Specific test class
-mvn test -Dtest=TemporalDBWebDemoApplicationTests
-```
 
 ### Package for Distribution
 ```bash
@@ -315,19 +295,6 @@ mvn clean package
 
 ---
 
-## 📊 Statistics
-
-```
-Total Code:        11,815+ lines
-Total Classes:     109+
-Total Modules:     3
-
-Core Module:       7,000+ LOC, 53+ classes
-CLI Module:        3,500+ LOC, 47+ classes
-Web Module:        600+ LOC (Java), 715+ LOC (HTML), 9 classes
-```
-
----
 
 ## 🔧 Configuration
 
@@ -348,8 +315,6 @@ logging.level.root=INFO
 logging.level.com.temporaldb=DEBUG
 ```
 
-### CLI Module Config
-No configuration file needed - just run and use!
 
 ### Core Module Config
 Configured programmatically when instantiated.
@@ -368,67 +333,6 @@ Configured programmatically when instantiated.
 
 ---
 
-## 🚀 Deployment
-
-### Docker
-```bash
-# Build Docker image
-docker build -t temporaldb-web:latest web/
-
-# Run container
-docker run -p 8080:8080 temporaldb-web:latest
-```
-
-### Cloud Platforms
-- **AWS** - Deploy to Elastic Beanstalk or ECS
-- **Google Cloud** - Deploy to Cloud Run or App Engine
-- **Azure** - Deploy to App Service
-- **Heroku** - Deploy using Procfile
-
-### Kubernetes
-```bash
-kubectl apply -f k8s/deployment.yaml
-kubectl port-forward svc/temporaldb-web 8080:8080
-```
-
----
-
-## 📚 Documentation Files
-
-| File | Purpose |
-|------|---------|
-| **README.md** | This file - Quick overview |
-| **DOCUMENTATION.md** | Complete detailed guide |
-| **core/README.md** | Core module documentation |
-| **cli/README.md** | CLI module documentation |
-| **web/README.md** | Web module documentation |
-| **FIX-ClassNotFoundException.md** | Troubleshooting guide |
-| **QUICK-FIX-Commands.md** | Quick fix commands |
-
----
-
-## ❓ Troubleshooting
-
-### ClassNotFoundException Error
-```
-Error: Could not find or load main class 
-  com.temporaldb.demo.TemporalDBWebDemoApplication
-```
-
-**Fix:**
-```bash
-cd web
-mvn clean install
-mvn spring-boot:run
-```
-
-See `FIX-ClassNotFoundException.md` for detailed solutions.
-
-### Port 8080 Already in Use
-Change the port in `web/src/main/resources/application.properties`:
-```properties
-server.port=8081
-```
 
 ### Slow Startup
 This is normal - Spring Boot initializes all components on startup. First run takes 3-5 seconds.
@@ -442,30 +346,6 @@ mvn clean install -U
 rm -rf ~/.m2/repository
 mvn clean install
 ```
-
----
-
-## 🎯 Learning Path
-
-### Beginner
-1. Run the web demo
-2. Create a few products
-3. Update prices and see changes tracked
-4. View the audit trail
-
-### Intermediate
-1. Use the time-travel feature
-2. Query the REST API with curl
-3. Examine the ProductService code
-4. Understand change detection logic
-
-### Advanced
-1. Study the Core module architecture
-2. Add custom temporal features
-3. Implement your own data model
-4. Deploy to cloud platform
-
----
 
 ## 💡 Tips & Tricks
 
@@ -492,23 +372,6 @@ mvn clean install
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions!
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit changes: `git commit -m 'Add my feature'`
-4. Push to branch: `git push origin feature/my-feature`
-5. Open a Pull Request
-
-**Guidelines:**
-- Follow existing code style
-- Add tests for new features
-- Update documentation
-- Keep commits atomic and descriptive
-
----
 
 ## 📝 License
 
@@ -516,37 +379,6 @@ MIT License - See LICENSE file for details
 
 ---
 
-## 📞 Support & Help
-
-### Getting Help
-1. **Check documentation** - See DOCUMENTATION.md
-2. **Review examples** - Look at ProductService.java
-3. **Search issues** - GitHub Issues tab
-4. **Ask community** - GitHub Discussions
-
-### Reporting Bugs
-1. Open GitHub Issue
-2. Include Java version, Maven version
-3. Add minimal reproduction example
-4. Attach error logs
-
----
-
-## 🗺️ Roadmap
-
-### Version 2.1
-- [ ] Database persistence layer
-- [ ] Advanced query optimization
-- [ ] Performance improvements
-- [ ] Additional REST endpoints
-
-### Version 3.0
-- [ ] Distributed transactions
-- [ ] Sharding support
-- [ ] Spark integration
-- [ ] Real-time streaming
-
----
 
 ## ✅ Pre-Flight Checklist
 
@@ -577,7 +409,7 @@ Everything is set up and ready to use:
 
 ```bash
 # Clone
-git clone https://github.com/yourusername/temporaldb.git
+git clone https://github.com/Mmakali/temporaldb.git
 cd temporaldb
 
 # Build
@@ -587,22 +419,14 @@ mvn clean install
 cd web && mvn spring-boot:run
 # → http://localhost:8080
 
-# Run CLI
-cd cli && java -jar target/temporaldb-cli-2.0.0.jar
 
-# Run Tests
-mvn test
 
 # Clean Build
 mvn clean install -U
 
 # View Help
-cd cli && java -jar target/temporaldb-cli-2.0.0.jar
+java -jar target/temporaldb-core-2.0.0.jar
 # Type: help
 ```
 
 ---
-
-**Questions? Check DOCUMENTATION.md for the complete detailed guide!**
-
-**Happy exploring! 🚀⏰**
